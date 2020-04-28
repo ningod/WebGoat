@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+    tools { 
+        maven 'maven-3.6.3' 
+        jdk 'System (OpenJDK 11)' 
+    }
+	options {
+        skipStagesAfterUnstable()
+    }	
+    stages {
+        stage ('Initialize') {
+            steps {
+                sh '''
+                    echo "PATH = ${PATH}"
+                    echo "M2_HOME = ${M2_HOME}"
+                ''' 
+            }
+        }
+		stage ('Checkout') {
+		 checkout([$class: 'GitSCM', branches: [[name: '*/develop']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/WebGoat/WebGoat']]]) 
+		}		
+
+		stage ('Build') {
+            steps {
+                sh 'mvn clean package -Dmaven.test.skip=true' 
+            }
+        }		
+		stage('Tests') {
+            steps {
+                sh 'mvn test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+		stage('SAST') {
+            steps {
+                sh 'mvn org.owasp:dependency-check-maven:5.3.2:check sonar:sonar -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.skip=true'
+            }
+            post {
+                success {
+                    sh 'echo TODO: PUBLISH SAST RESULT'
+                }
+            }
+        }
+		stage('DAST') {
+            steps {
+                sh 'echo TODO: EXEC DAST'
+            }
+            post {
+                success {
+                    sh 'echo TODO: PUBLISH DAST RESULT'
+                }
+            }
+        }
+    }
+}
