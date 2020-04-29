@@ -2,7 +2,7 @@ pipeline {
   agent {
     docker {
       image 'openjdk:11-jdk'
-      args '-v $HOME/.m2:/root/.m2:z -u 0 --expose 8080 -e PIPELINE_NETWORK -e VIRTUAL_HOST=webgoat.integration.${PIPELINE_NETWORK}'
+      args '-v maven_repository:/root/.m2:z --expose 8080 -e PIPELINE_NETWORK -e VIRTUAL_HOST=webgoat.integration.${PIPELINE_NETWORK}'
       reuseNode true
     }
 
