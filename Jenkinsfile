@@ -2,7 +2,8 @@ pipeline {
   agent {
     docker {
       image 'openjdk:11-jdk'
-      args '-v $HOME/.m2:/root/.m2 --expose 8080 -e PIPELINE_NETWORK -e VIRTUAL_HOST=webgoat.integration.${PIPELINE_NETWORK}'
+      args '-v $HOME/.m2:/root/.m2:z -u 0 --expose 8080 -e PIPELINE_NETWORK -e VIRTUAL_HOST=webgoat.integration.${PIPELINE_NETWORK}'
+      reuseNode true
     }
 
   }
@@ -21,7 +22,7 @@ export POM_ARTIFACTID="$(cat pom.xml| grep "<artifactId>.*</artifactId>" | head 
       steps {
         sh './mvnw clean compile'
         sh '''#FIXME Could not find artifact org.owasp.webgoat:webgoat-container:jar:tests:v8.0.0-SNAPSHOT
-./mvnw install -pl !webgoat-integration-tests -Dmaven.test.skip=true
+./mvnw -B install -pl !webgoat-integration-tests -Dmaven.test.skip=true
 
 '''
       }
@@ -31,7 +32,7 @@ export POM_ARTIFACTID="$(cat pom.xml| grep "<artifactId>.*</artifactId>" | head 
       parallel {
         stage('Unit Test') {
           steps {
-            sh './mvnw test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
+            sh './mvnw -B test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
             junit(allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml')
           }
         }
@@ -39,7 +40,7 @@ export POM_ARTIFACTID="$(cat pom.xml| grep "<artifactId>.*</artifactId>" | head 
         stage('SAST') {
           steps {
             withSonarQubeEnv(installationName: 'sonarqube-scanner-4.3', credentialsId: 'sonarqube') {
-              sh './mvnw org.owasp:dependency-check-maven:5.3.2:check sonar:sonar -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.skip=true'
+              sh './mvnw -B org.owasp:dependency-check-maven:5.3.2:check sonar:sonar -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.skip=true'
               waitForQualityGate(credentialsId: 'sonarqube', abortPipeline: true)
             }
 
