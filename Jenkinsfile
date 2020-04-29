@@ -20,7 +20,10 @@ export POM_ARTIFACTID="$(cat pom.xml| grep "<artifactId>.*</artifactId>" | head 
     stage('Build') {
       steps {
         sh './mvnw clean compile'
-        sh './mvnw package -Dmaven.test.skip=true'
+        sh '''#FIXME Could not find artifact org.owasp.webgoat:webgoat-container:jar:tests:v8.0.0-SNAPSHOT
+./mvnw package -pl !webgoat-integration-tests,!docker -Dmaven.test.skip=true
+
+'''
       }
     }
 
