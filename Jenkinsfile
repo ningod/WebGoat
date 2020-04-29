@@ -20,7 +20,14 @@ export POM_ARTIFACTID="$(cat pom.xml| grep "<artifactId>.*</artifactId>" | head 
     stage('Build') {
       steps {
         sh './mvnw clean compile'
-        sh './mvnw package -Dmaven.test.skip=true\' '
+        sh './mvnw package -Dmaven.test.skip=true'
+      }
+    }
+
+    stage('Test') {
+      steps {
+        sh './mvnw test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
+        junit(allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml')
       }
     }
 
