@@ -30,25 +30,20 @@ echo "$M2_HOME $M2_REPOSITORY $GIT_LOCAL_BRANCH $GIT_LAST_COMMIT_AUTHOR $POM_GRO
     }
 
     stage('Test') {
-      parallel {
-        stage('Unit Test') {
-          steps {
-            sh '''set +x
-./mvnw -B test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'''
-            junit(allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml')
-          }
-        }
-
+      
         stage('SAST') {
           steps {
             withSonarQubeEnv(installationName: 'sonarqube-scanner-4.3', credentialsId: 'sonarqube') {
-              sh '''set +x
-./mvnw -B org.owasp:dependency-check-maven:5.3.2:check sonar:sonar -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.skip=true'''
+              sh '''
+              set +x
+              ./mvnw -B test org.owasp:dependency-check-maven:5.3.2:check sonar:sonar -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.failure.ignore=true
+              '''
+              junit(allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml')
               waitForQualityGate(credentialsId: 'sonarqube', abortPipeline: true)
             }
 
           }
-        }
+        
 
       }
     }
