@@ -21,16 +21,31 @@ export POM_ARTIFACTID="$(cat pom.xml| grep "<artifactId>.*</artifactId>" | head 
       steps {
         sh './mvnw clean compile'
         sh '''#FIXME Could not find artifact org.owasp.webgoat:webgoat-container:jar:tests:v8.0.0-SNAPSHOT
-./mvnw package -pl !webgoat-integration-tests,!docker,!bypass-restrictions -Dmaven.test.skip=true
+./mvnw install -pl !webgoat-integration-tests,!docker -Dmaven.test.skip=true
 
 '''
       }
     }
 
     stage('Test') {
-      steps {
-        sh './mvnw test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
-        junit(allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml')
+      parallel {
+        stage('Unit Test') {
+          steps {
+            sh './mvnw test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
+            junit(allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml')
+          }
+        }
+
+        stage('SAST') {
+          steps {
+            withSonarQubeEnv(installationName: 'sonarqube-scanner-4.3', credentialsId: 'sonarqube') {
+              sh './mvnw org.owasp:dependency-check-maven:5.3.2:check sonar:sonar -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.skip=true'
+              waitForQualityGate(credentialsId: 'sonarqube', abortPipeline: true)
+            }
+
+          }
+        }
+
       }
     }
 
