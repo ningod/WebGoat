@@ -17,11 +17,15 @@ echo "$M2_HOME $M2_REPOSITORY $GIT_LOCAL_BRANCH $GIT_LAST_COMMIT_AUTHOR $POM_GRO
 
     stage('Build') {
       steps {
-        sh './mvnw clean compile'
-        sh '''#FIXME Could not find artifact org.owasp.webgoat:webgoat-container:jar:tests:v8.0.0-SNAPSHOT
-./mvnw -B install -pl !webgoat-integration-tests -Dmaven.test.skip=true
-
-'''
+        sh '''
+          set +x
+          ./mvnw clean compile
+        '''
+        sh '''
+          set +x
+          #FIXME Could not find artifact org.owasp.webgoat:webgoat-container:jar:tests:v8.0.0-SNAPSHOT
+          ./mvnw install -B -f ./webgoat-container/pom.xml && ./mvnw -B install -Dmaven.test.skip=true
+         '''
       }
     }
 
