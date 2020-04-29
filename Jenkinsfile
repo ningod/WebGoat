@@ -2,7 +2,7 @@ pipeline {
   agent {
     docker {
       image 'openjdk:11-jdk'
-      args '--expose 8080 -e PIPELINE_NETWORK -e VIRTUAL_HOST=webgoat.integration.${PIPELINE_NETWORK}'
+      args '-v $HOME/.m2:/root/.m2 --expose 8080 -e PIPELINE_NETWORK -e VIRTUAL_HOST=webgoat.integration.${PIPELINE_NETWORK}'
     }
 
   }
