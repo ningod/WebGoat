@@ -79,8 +79,8 @@ pipeline {
           script {
               echo "dependencytrack upload projectName ${POM_ARTIFACTID}"
               dependencyTrackPublisher (
-                artifact: "target/dependency-check-report.xml",
-                artifactType: "Dependency-Check Scan Result (XML)",
+                artifact: "target/bom.xml",
+                artifactType: "bom",
                 projectName: "${POM_ARTIFACTID}",
                 projectVersion: "${POM_VERSION}",
                 synchronous: true            
