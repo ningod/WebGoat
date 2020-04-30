@@ -99,7 +99,7 @@ post {
 
 
 def getLastCommitAuthor() {
-  return sh(returnStdout: true, script: "#!/bin/bash +x git log -1 --pretty=format:\'%an %ae\)").trim()
+  return sh(returnStdout: true, script: "#!/bin/bash +x git log -1 --pretty=format:\'%an %ae\'").trim()
 }
 
 def getCurrentBranch () {
