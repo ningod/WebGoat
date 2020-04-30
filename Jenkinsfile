@@ -2,11 +2,21 @@
 
 pipeline {
   
-  agent any
+  agent none
   
   stages {
     
     stage('Initialize') {
+      
+      agent {
+          docker {
+              image 'docker.io/openjdk:11-jdk'
+              label 'my-javabuild-11-jdk'
+              args  '-v maven_repository:/root/.m2/repository'
+              reuseNode: true
+          }
+      }      
+      
       steps {
         sh "printenv | sort"
         script {
@@ -21,6 +31,16 @@ pipeline {
     }
 
     stage('Build') {
+      
+      agent {
+          docker {
+              image 'docker.io/openjdk:11-jdk'
+              label 'my-javabuild-11-jdk'
+              args  '-v maven_repository:/root/.m2/repository'            
+              reuseNode: true
+          }
+      }     
+      
       steps {
         script {
           echo "compile parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
@@ -33,6 +53,15 @@ pipeline {
  
       
     stage('Unit Test') {
+
+      agent {
+          docker {
+              image 'docker.io/openjdk:11-jdk'
+              label 'my-javabuild-11-jdk'
+              args  '-v maven_repository:/root/.m2/repository'            
+              reuseNode: true
+          }
+      }     
       
       steps {
         script {
@@ -49,7 +78,16 @@ pipeline {
     }
       
     stage('SAST') {
-        
+
+      agent {
+          docker {
+              image 'docker.io/openjdk:8-jdk'
+              label 'my-javabuild-8-jdk'
+              args  '-v maven_repository:/root/.m2/repository'            
+              reuseNode: true
+          }
+      }       
+      
       steps {
         
         withSonarQubeEnv('owasp/sonarqube') {
