@@ -25,6 +25,14 @@ pipeline {
 
     stage('Build') {
       
+      agent {
+          docker {
+              image 'docker.io/openjdk:11-jdk'
+              label 'javabuild-11-jdk'
+              args  '-v maven_repository:/root/.m2/repository'
+              reuseNode: true
+          }
+      }//End Agent  
       
       steps {
         script {
@@ -54,9 +62,14 @@ pipeline {
       
     stage('SAST') {
       
-      tools {
-        jdk "jdk8"
-      }
+      agent {
+          docker {
+              image 'docker.io/openjdk:8-jdk'
+              label 'javabuild-8-jdk'
+              args  '-v maven_repository:/root/.m2/repository'
+              reuseNode: true
+          }
+      }//End Agent  
            
       steps {
         
