@@ -52,11 +52,19 @@ pipeline {
         
       steps {
         withSonarQubeEnv('owasp/sonarqube') {
-          script {
+        script {
             echo "org.owasp:dependency-check-maven:5.3.2:check parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
             sh './mvnw -B -q org.owasp:dependency-check-maven:5.3.2:aggregate -Dformats=XML,HTML -Dmaven.test.skip=true'
             echo "org.cyclonedx:cyclonedx-maven-plugin:1.6.4 parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
             sh "./mvnw org.cyclonedx:cyclonedx-maven-plugin:1.6.4:makeAggregateBom"
+          }          
+          
+        script {
+            echo "sonar:sonar parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
+            sh './mvnw -B -q sonar:sonar -Dmaven.test.skip=true'
+          }    
+          
+          script {
             echo "dependencytrack upload projectName ${POM_ARTIFACTID}"
             dependencyTrackPublisher (
               artifact: "target/dependency-check-report.xml",
@@ -65,13 +73,11 @@ pipeline {
               projectVersion: "${POM_VERSION}",
               synchronous: true            
             )
-            echo "sonar:sonar parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
-            sh './mvnw -B -q sonar:sonar -Dmaven.test.skip=true'
-          }          
-        }        
+          }
+          
         timeout(time: 10, unit: 'MINUTES') {
                 waitForQualityGate abortPipeline: true
-        }
+        }          
       }
     }
 
