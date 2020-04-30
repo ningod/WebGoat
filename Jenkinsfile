@@ -55,11 +55,11 @@ pipeline {
       
       steps {
         script {
-          echo "owasp org.owasp:dependency-check-maven:5.3.2:check parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION} webgoat-server,webgoat-lessons"
-          sh './mvnw -B org.owasp:dependency-check-maven:5.3.2:check -pl webgoat-server,webgoat-lessons -Dformat=XML,HTML -Dmaven.test.skip=true'
+          echo "owasp org.owasp:dependency-check-maven:5.3.2:check parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
+          sh './mvnw -B -q org.owasp:dependency-check-maven:5.3.2:aggregate -Dformats=XML,HTML -Dmaven.test.skip=true'
           echo "TODO dependencytrack"
-          echo "sonar:sonar parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION} webgoat-server,webgoat-lessons"
-          sh './mvnw -B org.owasp:dependency-check-maven:5.3.2:check sonar:sonar -pl webgoat-server,webgoat-lessons -Dformat=XML,HTML -Dmaven.test.failure.ignore=true'
+          echo "sonar:sonar parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
+          sh './mvnw -B -q sonar:sonar -Dmaven.test.failure.ignore=true'
         }
         
         timeout(time: 10, unit: 'MINUTES') {
