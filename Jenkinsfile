@@ -49,26 +49,27 @@ pipeline {
     }
       
     stage('SAST') {
-      environment {
-            scannerHome = tool 'sonarqube-scanner-4.3'
-      }      
-      
-      steps {
-        script {
-          echo "org.owasp:dependency-check-maven:5.3.2:check parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
-          sh './mvnw -B -q org.owasp:dependency-check-maven:5.3.2:aggregate -Dformats=XML,HTML -Dmaven.test.skip=true'
-          echo "org.cyclonedx:cyclonedx-maven-plugin:1.6.4 parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
-          sh "./mvnw org.cyclonedx:cyclonedx-maven-plugin:1.6.4:makeAggregateBom"
-          echo "TODO dependencytrack upload"
-          dependencyTrackPublisher (
-            artifact: "target/dependency-check-report.xml",
-            artifactType: "Dependency-Check Scan Result (XML)",
-            synchronous: true            
-          )
-          echo "sonar:sonar parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
-          sh './mvnw -B -q sonar:sonar -Dmaven.test.failure.ignore=true'
-        }
         
+      steps {
+        withSonarQubeEnv('sonarqube-scanner-4.3') {
+          script {
+            echo "org.owasp:dependency-check-maven:5.3.2:check parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
+            sh './mvnw -B -q org.owasp:dependency-check-maven:5.3.2:aggregate -Dformats=XML,HTML -Dmaven.test.skip=true'
+            echo "org.cyclonedx:cyclonedx-maven-plugin:1.6.4 parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
+            sh "./mvnw org.cyclonedx:cyclonedx-maven-plugin:1.6.4:makeAggregateBom"
+            echo "dependencytrack upload"
+            dependencyTrackPublisher (
+              artifact: "target/dependency-check-report.xml",
+              artifactType: "Dependency-Check Scan Result (XML)",
+              projectId: "${POM_GROUPID}-${POM_ARTIFACTID}"
+              projectName: "${POM_ARTIFACTID}",
+              projectVersion: "${POM_VERSION}",
+              synchronous: true            
+            )
+            echo "sonar:sonar parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
+            sh './mvnw -B -q sonar:sonar -Dmaven.test.skip=true'
+          }          
+        }        
         timeout(time: 10, unit: 'MINUTES') {
                 waitForQualityGate abortPipeline: true
         }
