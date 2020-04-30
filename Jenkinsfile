@@ -7,8 +7,8 @@ pipeline {
       steps {
         script {
           M2_REPOSITORY=getM2LocalRepository()
-          GIT_LOCAL_BRANCH="$(git branch | sed \'s/[* ]//g\')"
-          GIT_LAST_COMMIT_AUTHOR="$(git log -1 --pretty=format:\'%an %ae\')"
+          GIT_LOCAL_BRANCH=getCurrentBranch()
+          GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
           POM_VERSION=getPomVersion()
           POM_GROUPID=getPomGroupId()
           POM_ARTIFACTID=getPomArtifactId()
@@ -62,6 +62,10 @@ def getChangeAuthorName() {
 
 def getChangeAuthorEmail() {
     return sh(returnStdout: true, script: "git show -s --pretty=%ae").trim()
+}
+  
+def getLastCommitAuthor() {
+    return sh(returnStdout: true, script: "git log -1 --pretty=format:\'%an %ae\'").trim()
 }
 
 def getChangeSet() {
