@@ -50,65 +50,66 @@ pipeline {
     }
 
   }
-}
-
-def getShortCommitHash() {
-    return sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
-}
-
-def getChangeAuthorName() {
-    return sh(returnStdout: true, script: "git show -s --pretty=%an").trim()
-}
-
-def getChangeAuthorEmail() {
-    return sh(returnStdout: true, script: "git show -s --pretty=%ae").trim()
-}
-  
-def getLastCommitAuthor() {
-    return sh(returnStdout: true, script: "git log -1 --pretty=format:\'%an %ae\'").trim()
-}
-
-def getChangeSet() {
-    return sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
-}
-
-def getChangeLog() {
-    return sh(returnStdout: true, script: "git log --date=short --pretty=format:'%ad %aN <%ae> %n%n%x09* %s%d%n%b'").trim()
-}
-
-def getCurrentBranch () {
-    return sh (
-            script: 'git rev-parse --abbrev-ref HEAD',
-            returnStdout: true
-    ).trim()
-}
 
 
+  def getShortCommitHash() {
+      return sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
+  }
 
-def getM2LocalRepository () {
-    return sh (
-            script: './mvnw help:evaluate -Dexpression=settings.localRepository | grep .m2',
-            returnStdout: true
-    ).trim()
-}
+  def getChangeAuthorName() {
+      return sh(returnStdout: true, script: "git show -s --pretty=%an").trim()
+  }
 
-def getPomGroupId () {
-    return sh (
-            script: 'cat pom.xml| grep "<groupId>.*</groupId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
-            returnStdout: true
-    ).trim()
-}
+  def getChangeAuthorEmail() {
+      return sh(returnStdout: true, script: "git show -s --pretty=%ae").trim()
+  }
 
-def getPomArtifactId () {
-    return sh (
-            script: 'cat pom.xml| grep "<artifactId>.*</artifactId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
-            returnStdout: true
-    ).trim()
-}
+  def getLastCommitAuthor() {
+      return sh(returnStdout: true, script: "git log -1 --pretty=format:\'%an %ae\'").trim()
+  }
 
-def getPomVersion () {
-    return sh (
-            script: 'cat pom.xml| grep "<version>.*</version>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
-            returnStdout: true
-    ).trim()
+  def getChangeSet() {
+      return sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
+  }
+
+  def getChangeLog() {
+      return sh(returnStdout: true, script: "git log --date=short --pretty=format:'%ad %aN <%ae> %n%n%x09* %s%d%n%b'").trim()
+  }
+
+  def getCurrentBranch () {
+      return sh (
+              script: 'git rev-parse --abbrev-ref HEAD',
+              returnStdout: true
+      ).trim()
+  }
+
+
+
+  def getM2LocalRepository () {
+      return sh (
+              script: './mvnw help:evaluate -Dexpression=settings.localRepository | grep .m2',
+              returnStdout: true
+      ).trim()
+  }
+
+  def getPomGroupId () {
+      return sh (
+              script: 'cat pom.xml| grep "<groupId>.*</groupId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
+              returnStdout: true
+      ).trim()
+  }
+
+  def getPomArtifactId () {
+      return sh (
+              script: 'cat pom.xml| grep "<artifactId>.*</artifactId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
+              returnStdout: true
+      ).trim()
+  }
+
+  def getPomVersion () {
+      return sh (
+              script: 'cat pom.xml| grep "<version>.*</version>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
+              returnStdout: true
+      ).trim()
+  }
 }
