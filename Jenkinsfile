@@ -81,7 +81,6 @@ pipeline {
               dependencyTrackPublisher (
                 artifact: "target/dependency-check-report.xml",
                 artifactType: "Dependency-Check Scan Result (XML)",
-                projectId: "fdd9377f-a007-479d-93ef-92e98a8479cd", 
                 projectName: "${POM_ARTIFACTID}",
                 projectVersion: "${POM_VERSION}",
                 synchronous: true            
