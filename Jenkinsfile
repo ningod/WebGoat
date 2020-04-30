@@ -24,9 +24,9 @@ pipeline {
       steps {
         script {
           echo "compile parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
-          sh './mvnw clean compile'
+          sh './mvnw -q -B clean compile'
           echo "package parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
-          sh './mvnw install -B -f ./webgoat-container/pom.xml && ./mvnw -B install -Dmaven.test.skip=true'
+          sh './mvnw -q -B install -f ./webgoat-container/pom.xml && ./mvnw -B install -Dmaven.test.skip=true'
         }
       }
     }
@@ -37,12 +37,12 @@ pipeline {
       steps {
         script {
           echo "test parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
-          sh './mvnw -B test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
+          sh './mvnw -q -B test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
          }
       }
       post {
         always {
-            junit '**/target/surefire-reports/**/*.xml' 
+            junit allowEmptyResults: true, testResults: '**/target/surefire-reports/**/*.xml' 
         }
       }
       
@@ -61,10 +61,9 @@ pipeline {
           sh "./mvnw org.cyclonedx:cyclonedx-maven-plugin:1.6.4:makeAggregateBom"
           echo "TODO dependencytrack upload"
           dependencyTrackPublisher (
-            artifact: "target/bom.xml"
-            artifactType: "CycloneDX"
-            synchronous: true
-            
+            artifact: "target/dependency-check-report.xml",
+            artifactType: "Dependency-Check Scan Result (XML)",
+            synchronous: true            
           )
           echo "sonar:sonar parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
           sh './mvnw -B -q sonar:sonar -Dmaven.test.failure.ignore=true'
