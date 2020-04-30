@@ -8,6 +8,7 @@ pipeline {
     
     stage('Initialize') {
       steps {
+        sh "printenv"
         script {
           M2_REPOSITORY=getM2LocalRepository()
           GIT_LOCAL_BRANCH=getCurrentBranch()
@@ -15,7 +16,7 @@ pipeline {
           POM_VERSION=getPomVersion()
           POM_GROUPID=getPomGroupId()
           POM_ARTIFACTID=getPomArtifactId()
-          echo "$M2_HOME $M2_REPOSITORY $GIT_LOCAL_BRANCH $GIT_LAST_COMMIT_AUTHOR $POM_GROUPID $POM_ARTIFACTID $POM_VERSION"
+          echo "${env.M2_HOME} ${M2_REPOSITORY} ${GIT_LOCAL_BRANCH} ${GIT_LAST_COMMIT_AUTHOR} ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
         }
       }
     }
@@ -23,9 +24,9 @@ pipeline {
     stage('Build') {
       steps {
         script {
-          echo "compile parent pom $POM_GROUPID $POM_ARTIFACTID $POM_VERSION"
+          echo "compile parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
           sh './mvnw clean compile'
-          echo "package parent pom $POM_GROUPID $POM_ARTIFACTID $POM_VERSION"
+          echo "package parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
           sh './mvnw install -B -f ./webgoat-container/pom.xml && ./mvnw -B install -Dmaven.test.skip=true'
         }
       }
@@ -36,7 +37,7 @@ pipeline {
       
       steps {
         script {
-          echo "test parent pom $POM_GROUPID $POM_ARTIFACTID $POM_VERSION"
+          echo "test parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
           sh '/mvnw -B test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
          }
       }
@@ -53,7 +54,7 @@ pipeline {
           echo "owasp org.owasp:dependency-check-maven:5.3.2:check parent pom $POM_GROUPID $POM_ARTIFACTID $POM_VERSION"
           sh '/mvnw -B org.owasp:dependency-check-maven:5.3.2:check -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.skip=true'
           echo "TODO dependencytrack"
-          echo "sonar:sonar parent pom $POM_GROUPID $POM_ARTIFACTID $POM_VERSION"
+          echo "sonar:sonar parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
           sh '/mvnw -B org.owasp:dependency-check-maven:5.3.2:check sonar:sonar -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.failure.ignore=true'
         }
         
@@ -74,8 +75,7 @@ post {
          * 3. aborted, success, unstable or failure - depending on status
          */
         always {
-            echo "I AM ALWAYS first"
-            notifyBuild("${currentBuild.currentResult}")
+            echo "I AM ALWAYS first"            
         }
         aborted {
             echo "BUILD ABORTED"
