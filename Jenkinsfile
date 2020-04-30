@@ -51,7 +51,7 @@ pipeline {
     stage('SAST') {
         
       steps {
-        withSonarQubeEnv('sonarqube-scanner-4.3') {
+        withSonarQubeEnv('owasp/sonarqube') {
           script {
             echo "org.owasp:dependency-check-maven:5.3.2:check parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
             sh './mvnw -B -q org.owasp:dependency-check-maven:5.3.2:aggregate -Dformats=XML,HTML -Dmaven.test.skip=true'
