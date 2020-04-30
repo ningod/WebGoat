@@ -63,7 +63,7 @@ pipeline {
 
           script {
               echo "sonar:sonar parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
-              sh './mvnw -B -q sonar:sonar -Dmaven.test.skip=true'
+              sh './mvnw -B -q sonar:sonar -pl !webgoat-integration-tests,!docker -Dmaven.test.skip=true'
           }    
 
           script {
