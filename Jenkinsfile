@@ -86,10 +86,6 @@ pipeline {
                 synchronous: true            
               )
           }
-
-          timeout(time: 10, unit: 'MINUTES') {
-                  waitForQualityGate abortPipeline: true
-          }  
           
         }// End WithSonarQubeEnv
       }//End SAST steps
