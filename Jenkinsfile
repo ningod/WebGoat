@@ -2,21 +2,13 @@
 
 pipeline {
   
-  agent none
+  agent any
   
   stages {
     
     stage('Initialize') {
       
-      agent {
-          docker {
-              image 'docker.io/openjdk:11-jdk'
-              label 'my-javabuild-11-jdk'
-              args  '-v maven_repository:/root/.m2/repository'
-              reuseNode: true
-          }
-      }      
-      
+         
       steps {
         sh "printenv | sort"
         script {
@@ -35,11 +27,11 @@ pipeline {
       agent {
           docker {
               image 'docker.io/openjdk:11-jdk'
-              label 'my-javabuild-11-jdk'
+              label 'javabuild-11-jdk'
               args  '-v maven_repository:/root/.m2/repository'            
               reuseNode: true
           }
-      }     
+      }//End Agent      
       
       steps {
         script {
@@ -54,40 +46,24 @@ pipeline {
       
     stage('Unit Test') {
 
-      agent {
-          docker {
-              image 'docker.io/openjdk:11-jdk'
-              label 'my-javabuild-11-jdk'
-              args  '-v maven_repository:/root/.m2/repository'            
-              reuseNode: true
-          }
-      }     
       
       steps {
         script {
           echo "test parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
           sh './mvnw -q -B test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
+          junit allowEmptyResults: true, testResults: '**/target/surefire-reports/**/*.xml' 
          }
       }
-      post {
-        always {
-            junit allowEmptyResults: true, testResults: '**/target/surefire-reports/**/*.xml' 
-        }
-      }
+
       
-    }
+    }//End Stage Unit Test
       
     stage('SAST') {
-
-      agent {
-          docker {
-              image 'docker.io/openjdk:8-jdk'
-              label 'my-javabuild-8-jdk'
-              args  '-v maven_repository:/root/.m2/repository'            
-              reuseNode: true
-          }
-      }       
       
+      tools {
+        jdk "jdk8"
+      }
+           
       steps {
         
         withSonarQubeEnv('owasp/sonarqube') {
