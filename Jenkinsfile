@@ -57,11 +57,10 @@ pipeline {
             sh './mvnw -B -q org.owasp:dependency-check-maven:5.3.2:aggregate -Dformats=XML,HTML -Dmaven.test.skip=true'
             echo "org.cyclonedx:cyclonedx-maven-plugin:1.6.4 parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
             sh "./mvnw org.cyclonedx:cyclonedx-maven-plugin:1.6.4:makeAggregateBom"
-            echo "dependencytrack upload"
+            echo "dependencytrack upload projectName ${POM_ARTIFACTID}"
             dependencyTrackPublisher (
               artifact: "target/dependency-check-report.xml",
               artifactType: "Dependency-Check Scan Result (XML)",
-              projectId: "${POM_GROUPID}-${POM_ARTIFACTID}",
               projectName: "${POM_ARTIFACTID}",
               projectVersion: "${POM_VERSION}",
               synchronous: true            
