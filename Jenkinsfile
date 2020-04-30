@@ -8,7 +8,7 @@ pipeline {
     
     stage('Initialize') {
       steps {
-        sh "printenv | sort"
+        sh "#!/bin/bash +x printenv | sort"
         script {
           M2_REPOSITORY=getM2LocalRepository()          
           GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
@@ -39,6 +39,11 @@ pipeline {
           echo "test parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
           sh './mvnw -B test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
          }
+      }
+      post {
+        always {
+            junit '**/target/surefire-reports/**/*.xml' 
+        }
       }
       
     }
@@ -94,12 +99,12 @@ post {
 
 
 def getLastCommitAuthor() {
-  return sh(returnStdout: true, script: "( set +x ; git log -1 --pretty=format:\'%an %ae\')").trim()
+  return sh(returnStdout: true, script: "#!/bin/bash +x git log -1 --pretty=format:\'%an %ae\)").trim()
 }
 
 def getCurrentBranch () {
   return sh (
-          script: '( set +x ; git rev-parse --abbrev-ref HEAD)',
+          script: '#!/bin/bash +x git rev-parse --abbrev-ref HEAD',
           returnStdout: true
   ).trim()
 }
@@ -108,28 +113,28 @@ def getCurrentBranch () {
 
 def getM2LocalRepository () {
   return sh (
-          script: '( set +x ; ./mvnw help:evaluate -Dexpression=settings.localRepository | grep .m2)',
+          script: '#!/bin/bash +x ./mvnw help:evaluate -Dexpression=settings.localRepository | grep .m2',
           returnStdout: true
   ).trim()
 }
 
 def getPomGroupId () {
   return sh (
-          script: '( set +x ; cat pom.xml| grep "<groupId>.*</groupId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\')',
+          script: '#!/bin/bash +x cat pom.xml| grep "<groupId>.*</groupId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
           returnStdout: true
   ).trim()
 }
 
 def getPomArtifactId () {
   return sh (
-          script: '( set +x ; cat pom.xml| grep "<artifactId>.*</artifactId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\')',
+          script: '#!/bin/bash +x cat pom.xml| grep "<artifactId>.*</artifactId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
           returnStdout: true
   ).trim()
 }
 
 def getPomVersion () {
   return sh (
-          script: '( set +x ; cat pom.xml| grep "<version>.*</version>" | head -n 1 | awk -F\'[><]\' \'{print $3}\')',
+          script: '#!/bin/bash +x cat pom.xml| grep "<version>.*</version>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
           returnStdout: true
   ).trim()
 }
