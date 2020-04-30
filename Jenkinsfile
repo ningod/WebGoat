@@ -55,9 +55,17 @@ pipeline {
       
       steps {
         script {
-          echo "owasp org.owasp:dependency-check-maven:5.3.2:check parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
+          echo "org.owasp:dependency-check-maven:5.3.2:check parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
           sh './mvnw -B -q org.owasp:dependency-check-maven:5.3.2:aggregate -Dformats=XML,HTML -Dmaven.test.skip=true'
-          echo "TODO dependencytrack"
+          echo "org.cyclonedx:cyclonedx-maven-plugin:1.6.4 parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
+          sh "./mvnw org.cyclonedx:cyclonedx-maven-plugin:1.6.4:makeAggregateBom"
+          echo "TODO dependencytrack upload"
+          dependencyTrackPublisher (
+            artifact: "target/bom.xml"
+            artifactType: "CycloneDX"
+            synchronous: true
+            
+          )
           echo "sonar:sonar parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
           sh './mvnw -B -q sonar:sonar -Dmaven.test.failure.ignore=true'
         }
