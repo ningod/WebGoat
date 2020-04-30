@@ -20,18 +20,11 @@ pipeline {
           echo "${env.M2_HOME} ${M2_REPOSITORY} ${env.GIT_LOCAL_BRANCH} ${GIT_LAST_COMMIT_AUTHOR} ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
         }
       }
-    }
+      
+    }// End Stage Initialize
 
     stage('Build') {
       
-      agent {
-          docker {
-              image 'docker.io/openjdk:11-jdk'
-              label 'javabuild-11-jdk'
-              args  '-v maven_repository:/root/.m2/repository'            
-              reuseNode: true
-          }
-      }//End Agent      
       
       steps {
         script {
@@ -41,7 +34,8 @@ pipeline {
           sh './mvnw -q -B install -f ./webgoat-container/pom.xml && ./mvnw -B install -Dmaven.test.skip=true'
         }
       }
-    }
+      
+    }// End Stage Build
  
       
     stage('Unit Test') {
@@ -98,7 +92,7 @@ pipeline {
           
         }// End WithSonarQubeEnv
       }//End SAST steps
-    }//ENd SAST Stage
+    }//End SAST Stage
 
   }//End Stages
     
