@@ -8,15 +8,14 @@ pipeline {
     
     stage('Initialize') {
       steps {
-        sh "printenv"
+        sh "printenv | sort"
         script {
-          M2_REPOSITORY=getM2LocalRepository()
-          GIT_LOCAL_BRANCH=getCurrentBranch()
+          M2_REPOSITORY=getM2LocalRepository()          
           GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
           POM_VERSION=getPomVersion()
           POM_GROUPID=getPomGroupId()
           POM_ARTIFACTID=getPomArtifactId()
-          echo "${env.M2_HOME} ${M2_REPOSITORY} ${GIT_LOCAL_BRANCH} ${GIT_LAST_COMMIT_AUTHOR} ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
+          echo "${env.M2_HOME} ${M2_REPOSITORY} ${env.GIT_LOCAL_BRANCH} ${GIT_LAST_COMMIT_AUTHOR} ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
         }
       }
     }
@@ -38,7 +37,7 @@ pipeline {
       steps {
         script {
           echo "test parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
-          sh '/mvnw -B test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
+          sh './mvnw -B test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
          }
       }
       
@@ -52,10 +51,10 @@ pipeline {
       steps {
         script {
           echo "owasp org.owasp:dependency-check-maven:5.3.2:check parent pom $POM_GROUPID $POM_ARTIFACTID $POM_VERSION"
-          sh '/mvnw -B org.owasp:dependency-check-maven:5.3.2:check -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.skip=true'
+          sh './mvnw -B org.owasp:dependency-check-maven:5.3.2:check -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.skip=true'
           echo "TODO dependencytrack"
           echo "sonar:sonar parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
-          sh '/mvnw -B org.owasp:dependency-check-maven:5.3.2:check sonar:sonar -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.failure.ignore=true'
+          sh './mvnw -B org.owasp:dependency-check-maven:5.3.2:check sonar:sonar -pl !webgoat-integration-tests,!docker -Dformat=XML,HTML -Dmaven.test.failure.ignore=true'
         }
         
         timeout(time: 10, unit: 'MINUTES') {
@@ -94,33 +93,13 @@ post {
 }//End Pipeline
 
 
-def getShortCommitHash() {
-  return sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
-}
-
-def getChangeAuthorName() {
-  return sh(returnStdout: true, script: "git show -s --pretty=%an").trim()
-}
-
-def getChangeAuthorEmail() {
-  return sh(returnStdout: true, script: "git show -s --pretty=%ae").trim()
-}
-
 def getLastCommitAuthor() {
-  return sh(returnStdout: true, script: "git log -1 --pretty=format:\'%an %ae\'").trim()
-}
-
-def getChangeSet() {
-  return sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
-}
-
-def getChangeLog() {
-  return sh(returnStdout: true, script: "git log --date=short --pretty=format:'%ad %aN <%ae> %n%n%x09* %s%d%n%b'").trim()
+  return sh(returnStdout: true, script: "( set +x ; git log -1 --pretty=format:\'%an %ae\')").trim()
 }
 
 def getCurrentBranch () {
   return sh (
-          script: 'git rev-parse --abbrev-ref HEAD',
+          script: '( set +x ; git rev-parse --abbrev-ref HEAD)',
           returnStdout: true
   ).trim()
 }
@@ -129,28 +108,28 @@ def getCurrentBranch () {
 
 def getM2LocalRepository () {
   return sh (
-          script: './mvnw help:evaluate -Dexpression=settings.localRepository | grep .m2',
+          script: '( set +x ; ./mvnw help:evaluate -Dexpression=settings.localRepository | grep .m2)',
           returnStdout: true
   ).trim()
 }
 
 def getPomGroupId () {
   return sh (
-          script: 'cat pom.xml| grep "<groupId>.*</groupId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
+          script: '( set +x ; cat pom.xml| grep "<groupId>.*</groupId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\')',
           returnStdout: true
   ).trim()
 }
 
 def getPomArtifactId () {
   return sh (
-          script: 'cat pom.xml| grep "<artifactId>.*</artifactId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
+          script: '( set +x ; cat pom.xml| grep "<artifactId>.*</artifactId>" | head -n 1 | awk -F\'[><]\' \'{print $3}\')',
           returnStdout: true
   ).trim()
 }
 
 def getPomVersion () {
   return sh (
-          script: 'cat pom.xml| grep "<version>.*</version>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
+          script: '( set +x ; cat pom.xml| grep "<version>.*</version>" | head -n 1 | awk -F\'[><]\' \'{print $3}\')',
           returnStdout: true
   ).trim()
 }
