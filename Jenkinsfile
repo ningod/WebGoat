@@ -5,6 +5,7 @@ pipeline {
   agent any
   
   stages {
+    
     stage('Initialize') {
       steps {
         script {
@@ -16,6 +17,7 @@ pipeline {
           POM_ARTIFACTID=getPomArtifactId()
           echo "$M2_HOME $M2_REPOSITORY $GIT_LOCAL_BRANCH $GIT_LAST_COMMIT_AUTHOR $POM_GROUPID $POM_ARTIFACTID $POM_VERSION"
         }
+      }
     }
 
     stage('Build') {
@@ -61,8 +63,35 @@ pipeline {
       }
     }
 
-  }
-}
+  }//End Stages
+    
+post {
+        /*
+         * These steps will run at the end of the pipeline based on the condition.
+         * Post conditions run in order regardless of their place in pipeline
+         * 1. always - always run
+         * 2. changed - run if something changed from last run
+         * 3. aborted, success, unstable or failure - depending on status
+         */
+        always {
+            echo "I AM ALWAYS first"
+            notifyBuild("${currentBuild.currentResult}")
+        }
+        aborted {
+            echo "BUILD ABORTED"
+        }
+        success {
+            echo "BUILD SUCCESS"
+            echo "Keep Current Build If branch is master"
+        }
+        unstable {
+            echo "BUILD UNSTABLE"
+        }
+        failure {
+            echo "BUILD FAILURE"
+        }
+    }// End Post
+}//End Pipeline
 
 
 def getShortCommitHash() {
