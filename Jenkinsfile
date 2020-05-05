@@ -103,6 +103,7 @@ pipeline {
     }//End Build Docker Stage
 
     
+
     stage('Parallel Delivery') {  
       parallel {
 
@@ -113,21 +114,31 @@ pipeline {
             script {        
               currentImageName = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
               echo "Run docker image ${currentImageName} on INTEGRATION"
+              docker.image(currentImageName).withRun('-d --name ${POM_ARTIFACTID}.integration -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network integration.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.integration.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ') {
+                /* do things */
+              }//End docker run
             }
+		  }
         }//End Delivery On Integration
 
-         stage('Delivery On QA') {
-           steps {
-             
+        stage('Delivery On QA') {
+          steps {
+            
+
             script {      
-              	currentImageName ="${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
-		echo "Run docker image ${currentImageName} on QA"
+              currentImageName ="${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
+			  echo "Run docker image ${currentImageName} on QA"
+              docker.image(currentImageName).withRun('-d --name ${POM_ARTIFACTID}.qa -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network qa.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.qa.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ' ) {
+                /* do things */
+              }//End docker run
             }
+		  }
         }//End Delivery On QA        
         
         
       }// End Parallel
-    }// End Parallel Delivery Stage    
+    }// End Parallel Delivery Stage
+	  
     
   }//End Stages
     
