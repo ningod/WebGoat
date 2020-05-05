@@ -90,6 +90,18 @@ pipeline {
         }// End WithSonarQubeEnv
       }//End SAST steps
     }//End SAST Stage
+    
+    stage('Build Docker') {
+      steps {
+        echo 'Starting to build docker image ${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}'
+
+        script {          
+          def currentBuildImage = docker.build("${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}", "-f Dockerfile ./docker")
+          //customImage.push()
+        }
+      }//End Build Docker steps
+    }//End Build Docker Stage
+    
 
   }//End Stages
     
