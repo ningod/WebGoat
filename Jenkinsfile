@@ -114,7 +114,7 @@ pipeline {
             script {        
               currentImageName = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
               echo "Run docker image ${currentImageName} on INTEGRATION"
-              docker.image(currentImageName).withRun('-d --name ${POM_ARTIFACTID}.integration -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network integration.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.integration.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ') {
+              docker.image(currentImageName).withRun(" --name ${POM_ARTIFACTID}.integration -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network integration.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.integration.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ") {
                 /* do things */
               }//End docker run
             }
@@ -127,8 +127,8 @@ pipeline {
 
             script {      
               currentImageName ="${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
-			  echo "Run docker image ${currentImageName} on QA"
-              docker.image(currentImageName).withRun('-d --name ${POM_ARTIFACTID}.qa -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network qa.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.qa.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ' ) {
+	      echo "Run docker image ${currentImageName} on QA"
+              docker.image(currentImageName).withRun(" --name ${POM_ARTIFACTID}.qa -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network qa.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.qa.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ") {
                 /* do things */
               }//End docker run
             }
