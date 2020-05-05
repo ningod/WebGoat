@@ -96,7 +96,7 @@ pipeline {
         echo 'Starting to build docker image ${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}'
 
         script {          
-          def currentImage = ${env.DOCKER_PRIVATE_REGISTRY} + ${POM_ARTIFACTID} + ":jenkins-" + ${env.BUILD_ID}
+          def currentImage = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
           def currentBuildImage = docker.build(currentImage, "-f Dockerfile ./docker")
           //customImage.push()
         }
@@ -112,10 +112,10 @@ pipeline {
             echo 'Run docker image ${POM_ARTIFACTID}:jenkins-${env.BUILD_ID} on INTEGRATION'
 
             script {        
-              def currentImage = ${env.DOCKER_PRIVATE_REGISTRY} + ${POM_ARTIFACTID} + ":jenkins-" + ${env.BUILD_ID}
+              def currentImage = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
               docker.image(currentImage).withRun('-d --name ${POM_ARTIFACTID}.integration -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network integration.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.integration.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ') {
                 /* do things */
-              }
+              }//End docker run
             }
         }//End Delivery On Integration
 
@@ -124,10 +124,10 @@ pipeline {
             echo 'Run docker image ${POM_ARTIFACTID}:jenkins-${env.BUILD_ID} on QA'
 
             script {      
-              def currentImage = ${env.DOCKER_PRIVATE_REGISTRY} + ${POM_ARTIFACTID} + ":jenkins-" + ${env.BUILD_ID}
+              def currentImage = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
               docker.image(currentImage).withRun('-d --name ${POM_ARTIFACTID}.qa -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network qa.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.qa.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ' ) {
                 /* do things */
-              }
+              }//End docker run
             }
         }//End Delivery On QA        
         
