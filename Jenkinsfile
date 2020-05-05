@@ -93,48 +93,14 @@ pipeline {
     
     stage('Build Docker') {
       steps {
-        echo 'Starting to build docker image ${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}'
-
         script {          
-          def currentImage = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
-          def currentBuildImage = docker.build(currentImage, "-f Dockerfile ./docker")
-          //customImage.push()
+          currentImageName = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
+          echo "Start building docker image ${currentImageName}"
+          currentBuildImage = docker.build(currentImage, "-f Dockerfile ./docker")
+          //currentBuildImage.push()
         }
       }//End Build Docker steps
     }//End Build Docker Stage
-      
-    stage('Parallel Delivery') {
-      failFast true
-      parallel {
-
-        stage('Delivery On Integration') {
-          steps {
-            echo 'Run docker image ${POM_ARTIFACTID}:jenkins-${env.BUILD_ID} on INTEGRATION'
-
-            script {        
-              def currentImage = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
-              docker.image(currentImage).withRun('-d --name ${POM_ARTIFACTID}.integration -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network integration.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.integration.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ') {
-                /* do things */
-              }//End docker run
-            }
-        }//End Delivery On Integration
-
-        stage('Delivery On QA') {
-          steps {
-            echo 'Run docker image ${POM_ARTIFACTID}:jenkins-${env.BUILD_ID} on QA'
-
-            script {      
-              def currentImage = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
-              docker.image(currentImage).withRun('-d --name ${POM_ARTIFACTID}.qa -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network qa.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.qa.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ' ) {
-                /* do things */
-              }//End docker run
-            }
-        }//End Delivery On QA        
-        
-        
-      }// End Parallel
-    }// End Parallel Delivery Stage
-
 
   }//End Stages
     
