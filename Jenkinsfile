@@ -19,7 +19,7 @@ pipeline {
           POM_ARTIFACTID=getPomArtifactId()
           echo "${env.M2_HOME} ${M2_REPOSITORY} ${env.GIT_LOCAL_BRANCH} ${GIT_LAST_COMMIT_AUTHOR} ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
         }
-      }
+      }// End steps
       
     }// End Stage Initialize
 
@@ -85,7 +85,7 @@ pipeline {
                 projectVersion: "${POM_VERSION}",
                 synchronous: true            
               )
-          }
+          }//End script
           
         }// End WithSonarQubeEnv
       }//End SAST steps
@@ -112,22 +112,22 @@ pipeline {
             echo 'Run docker image ${POM_ARTIFACTID}:jenkins-${env.BUILD_ID} on INTEGRATION'
 
             script {          
-              docker.image("${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}").withRun('-d --name ${POM_ARTIFACTID}.integration -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network integration.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.integration.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ') {
+              docker.image(${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}).withRun('-d --name ${POM_ARTIFACTID}.integration -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network integration.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.integration.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ') {
                 /* do things */
               }
             }
-          }//End Delivery On Integration
+        }//End Delivery On Integration
 
         stage('Delivery On QA') {
           steps {
             echo 'Run docker image ${POM_ARTIFACTID}:jenkins-${env.BUILD_ID} on QA'
 
             script {          
-              docker.image("${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}").withRun('-d --name ${POM_ARTIFACTID}.qa -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network qa.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.qa.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ' ) {
+              docker.image(${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}).withRun('-d --name ${POM_ARTIFACTID}.qa -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network qa.${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.qa.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ' ) {
                 /* do things */
               }
             }
-          }//End Delivery On QA        
+        }//End Delivery On QA        
         
         
       }// End Parallel
