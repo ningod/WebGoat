@@ -139,7 +139,19 @@ pipeline {
       }// End Parallel
     }// End Parallel Delivery Stage
 	  
-    
+        stage('Delivery On PRODUCTION') {
+          steps {
+            script {      
+		currentImageName ="${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
+		echo "Run docker image ${currentImageName} on PRODUCTION"
+		sh "docker stop ${POM_ARTIFACTID} || true"
+		sh "docker rm ${POM_ARTIFACTID} || true"
+		sh "docker run --name ${POM_ARTIFACTID} -e EXTERNAL_DOMAIN -e PIPELINE_NETWORK --network ${PIPELINE_NETWORK} -e VIRTUAL_HOST=${POM_ARTIFACTID}.${EXTERNAL_DOMAIN} -e VIRTUAL_PORT=8080 -e TZ ${currentImageName}"
+            }
+	  }
+        }//End Delivery On QA 
+	  
+	  
   }//End Stages
     
 post {
