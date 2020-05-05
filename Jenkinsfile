@@ -9,8 +9,7 @@ pipeline {
     stage('Initialize') {
       
          
-      steps {
-        sh "printenv | sort"
+      steps {        
         script {
           M2_REPOSITORY=getM2LocalRepository()          
           GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
@@ -29,6 +28,13 @@ pipeline {
       
       steps {
         script {
+          M2_REPOSITORY=getM2LocalRepository()          
+          GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
+          POM_VERSION=getPomVersion()
+          POM_GROUPID=getPomGroupId()
+          POM_ARTIFACTID=getPomArtifactId()          
+        }	      
+        script {
           echo "compile parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
           sh './mvnw -q -B clean compile'
           echo "package parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
@@ -43,6 +49,13 @@ pipeline {
 
       
       steps {
+        script {
+          M2_REPOSITORY=getM2LocalRepository()          
+          GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
+          POM_VERSION=getPomVersion()
+          POM_GROUPID=getPomGroupId()
+          POM_ARTIFACTID=getPomArtifactId()          
+        }	      
         script {
           echo "test parent pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
           sh './mvnw -q -B test -pl !webgoat-integration-tests,!docker -Dmaven.test.failure.ignore=true'
@@ -61,7 +74,13 @@ pipeline {
       
            
       steps {
-        
+        script {
+          M2_REPOSITORY=getM2LocalRepository()          
+          GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
+          POM_VERSION=getPomVersion()
+          POM_GROUPID=getPomGroupId()
+          POM_ARTIFACTID=getPomArtifactId()          
+        }        
         withSonarQubeEnv('owasp/sonarqube') {
         
           script {
@@ -93,6 +112,13 @@ pipeline {
     
     stage('Build Docker') {
       steps {
+        script {
+          M2_REPOSITORY=getM2LocalRepository()          
+          GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
+          POM_VERSION=getPomVersion()
+          POM_GROUPID=getPomGroupId()
+          POM_ARTIFACTID=getPomArtifactId()          
+        }	      
         script {          
           currentImageName = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
           echo "Start building docker image ${currentImageName}"
@@ -104,12 +130,19 @@ pipeline {
 
     
 
-    stage('Parallel Delivery') {  
+    stage('Parallel Delivery') { 
+	    
       parallel {
 
         stage('Delivery On Integration') {
           steps {
-
+		script {
+		  M2_REPOSITORY=getM2LocalRepository()          
+		  GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
+		  POM_VERSION=getPomVersion()
+		  POM_GROUPID=getPomGroupId()
+		  POM_ARTIFACTID=getPomArtifactId()          
+		}
 
             script {        
               currentImageName = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
@@ -123,7 +156,13 @@ pipeline {
 
         stage('Delivery On QA') {
           steps {
-            
+		script {
+		  M2_REPOSITORY=getM2LocalRepository()          
+		  GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
+		  POM_VERSION=getPomVersion()
+		  POM_GROUPID=getPomGroupId()
+		  POM_ARTIFACTID=getPomArtifactId()          
+		}            
 
             script {      
               currentImageName ="${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
@@ -141,6 +180,13 @@ pipeline {
 	  
         stage('Delivery On PRODUCTION') {
           steps {
+		script {
+		  M2_REPOSITORY=getM2LocalRepository()          
+		  GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
+		  POM_VERSION=getPomVersion()
+		  POM_GROUPID=getPomGroupId()
+		  POM_ARTIFACTID=getPomArtifactId()          
+		}		  
             script {      
 		currentImageName ="${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
 		echo "Run docker image ${currentImageName} on PRODUCTION"
@@ -221,5 +267,5 @@ def getPomVersion () {
           script: 'cat pom.xml| grep "<version>.*</version>" | head -n 1 | awk -F\'[><]\' \'{print $3}\'',
           returnStdout: true
   ).trim()
+	
 }
-
