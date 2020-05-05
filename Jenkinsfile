@@ -96,7 +96,7 @@ pipeline {
         script {          
           currentImageName = "${env.DOCKER_PRIVATE_REGISTRY}${POM_ARTIFACTID}:jenkins-${env.BUILD_ID}"
           echo "Start building docker image ${currentImageName}"
-          currentBuildImage = docker.build(currentImageName, "-f ./docker/Dockerfile")
+          currentBuildImage = docker.build(currentImageName, "./docker/Dockerfile")
           //currentBuildImage.push()
         }
       }//End Build Docker steps
