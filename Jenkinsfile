@@ -128,7 +128,26 @@ pipeline {
       }//End Build Docker steps
     }//End Build Docker Stage
 
-    
+    stage('Integration Test') {
+
+      
+      steps {
+        script {
+          M2_REPOSITORY=getM2LocalRepository()          
+          GIT_LAST_COMMIT_AUTHOR=getLastCommitAuthor()
+          POM_VERSION=getPomVersion()
+          POM_GROUPID=getPomGroupId()
+          POM_ARTIFACTID=getPomArtifactId()          
+        }	      
+        script {
+          echo "test webgoat-integration-tests pom ${POM_GROUPID} ${POM_ARTIFACTID} ${POM_VERSION}"
+          sh './mvnw -q -B install -pl webgoat-integration-tests -Dmaven.test.failure.ignore=true'
+          junit allowEmptyResults: true, testResults: '**/target/surefire-reports/**/*.xml' 
+         }
+      }
+
+      
+    }//End Stage Unit Test    
 
     stage('Parallel Delivery') { 
 	    
